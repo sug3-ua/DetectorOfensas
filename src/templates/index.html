@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Detección de lenguaje ofensivo</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Roboto', sans-serif;
+            background-image: url('static/fondo.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        @font-face {
+            font-family: 'RotisSerif';
+            src: url('{{ url_for('static', filename='fonts/RotisSerif.woff2') }}') format('woff2'),
+                 url('{{ url_for('static', filename='fonts/RotisSerif.woff') }}') format('woff');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        .header {
+            width: 100%;
+            background-color: #D6D6CC;
+            color: black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 10px;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .header img {
+            height: 50px;
+            position: absolute;
+        }
+
+        .header .logo-left {
+            left: 10px;
+        }
+
+        .header .logo-right {
+            right: 10px;
+            height: 70px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2em;
+            text-align: center;
+            font-family: 'RotisSerif', Helvetica, sans-serif;
+            flex: 1;
+        }
+
+        .container {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+        }
+
+        .container h2 {
+            font-size: 3em;
+            font-family: 'Source Serif 4', sans-serif;
+            margin-block-start: 0.40em;
+            margin-block-end: 0.40em;
+        }
+
+        #resultado {
+            display: none;
+            margin-top: 30px;
+            font-weight: bold;
+            font-size: 1.5em;
+        }
+
+        #input_text {
+            width: 80%;
+            height: 200px;
+            font-size: 1.2em;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: vertical;
+        }
+
+        input[type="submit"] {
+            padding: 15px 30px;
+            background-color: #f0f0f0;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.2em;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #ddd;
+        }
+    </style>
+    <script>
+        function enviarFormulario(event) {
+            event.preventDefault();
+
+            const form = event.target;
+            const inputText = document.getElementById('input_text').value.trim();
+
+            if (!inputText) {
+                return;
+            }
+
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: form.method,
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultadoDiv = document.getElementById('resultado');
+                resultadoDiv.textContent = data.prediccion;
+                if (data.prediccion === "Ofensivo") {
+                    resultadoDiv.style.color = 'red';
+                } else {
+                    resultadoDiv.style.color = 'green';
+                }
+                resultadoDiv.style.display = 'block'; // Hacer el div visible
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            form.addEventListener('submit', enviarFormulario);
+        });
+    </script>
+</head>
+<body>
+    <div class="header">
+        <img src="{{ url_for('static', filename='logoUA.png') }}" class="logo-left" alt="Logo Izquierda">
+        <h1>Detección de lenguaje ofensivo</h1>
+        <img src="{{ url_for('static', filename='logoInf.png') }}" class="logo-right" alt="Logo Derecha">
+    </div>
+    <div class="container">
+        <form action="/process" method="post">
+            <h2 for="input_text">Introduce el texto:</h2>
+            <textarea id="input_text" name="input_text" rows="4" cols="50"></textarea><br>
+            <input type="submit" value="Analizar">
+        </form>
+        
+        <div id="resultado"></div>
+    </div>
+</body>
+</html>
